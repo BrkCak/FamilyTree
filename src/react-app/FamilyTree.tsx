@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import * as go from "gojs";
 import { ReactDiagram } from "gojs-react";
 import "./FamilyTree.css";
@@ -29,7 +29,6 @@ const NODE_DATA: FamilyNodeData[] = [
 	{ key: 9, name: "Julia Weber", birth: "2001", sex: "F" },
 ];
 
-// Baum-Struktur: jeder Knoten hat höchstens ein Elter (TreeLayout)
 const LINK_DATA: FamilyLinkData[] = [
 	{ key: -1, from: 0, to: 1 },
 	{ key: -2, from: 0, to: 2 },
@@ -79,7 +78,7 @@ function initDiagram(): go.Diagram {
 					nodeSpacing: 24,
 					compaction: go.TreeLayout.CompactionBlock,
 					alignment: go.TreeLayout.AlignmentCenterChildren,
-				}
+				},
 			),
 			model: $(
 				go.GraphLinksModel,
@@ -87,9 +86,9 @@ function initDiagram(): go.Diagram {
 					linkKeyProperty: "key",
 					linkFromKeyProperty: "from",
 					linkToKeyProperty: "to",
-				}
-			),
-		}
+				},
+				),
+		},
 	);
 
 	diagram.nodeTemplate = $(
@@ -163,9 +162,59 @@ function initDiagram(): go.Diagram {
 	return diagram;
 }
 
-export function FamilyTree() {
-	const nodeDataArray = useMemo(() => NODE_DATA, []);
-	const linkDataArray = useMemo(() => LINK_DATA, []);
+export function FamilyTree({ sortByGender, focusName, onNotFound }: { sortByGender?: 'male'|'female'|'all'; focusName?: string; onNotFound?: (name?: string) => void }) {
+	const { nodeDataArray, notFound } = useMemo(() => {
+		let baseNodes = NODE_DATA;
+		let notFoundLocal = false;
+
+		if (focusName && focusName.trim() !== '') {
+			const needle = focusName.trim().toLowerCase();
+			const found = NODE_DATA.find((n) => n.name.toLowerCase().includes(needle));
+			if (!found) {
+				notFoundLocal = true;
+				return { nodeDataArray: NODE_DATA, notFound: notFoundLocal };
+			}
+
+			// Statt nur den direkten Parent zu nehmen, klettere iterativ hoch
+			let rootKey = found.key;
+			let parentLink = LINK_DATA.find((l) => l.to === rootKey);
+			while (parentLink) {
+				rootKey = parentLink.from;
+				parentLink = LINK_DATA.find((l) => l.to === rootKey);
+			}
+
+			const included = new Set<number>();
+			const queue = [rootKey];
+			while (queue.length) {
+				const k = queue.shift()!;
+				if (included.has(k)) continue;
+				included.add(k);
+				for (const l of LINK_DATA) {
+					if (l.from === k && !included.has(l.to)) queue.push(l.to);
+				}
+			}
+
+			baseNodes = NODE_DATA.filter((n) => included.has(n.key));
+		}
+
+		if (sortByGender && sortByGender !== 'all') {
+			const wanted = sortByGender === 'male' ? 'M' : 'F';
+			baseNodes = baseNodes.filter((n) => n.sex === wanted);
+		}
+
+		return { nodeDataArray: baseNodes, notFound: notFoundLocal };
+	}, [sortByGender, focusName]);
+
+	useEffect(() => {
+		if (notFound) {
+			onNotFound?.(focusName);
+		}
+	}, [notFound, focusName, onNotFound]);
+
+	const linkDataArray = useMemo(() => {
+		const nodeKeys = new Set(nodeDataArray.map((n) => n.key));
+		return LINK_DATA.filter((l) => nodeKeys.has(l.from) && nodeKeys.has(l.to));
+	}, [nodeDataArray]);
 
 	return (
 		<div className="family-tree-container">
