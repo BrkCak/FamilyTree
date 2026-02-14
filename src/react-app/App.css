@@ -1,32 +1,16 @@
-.logo {
-	will-change: filter;
-	transition: filter 300ms;
+.family-app {
+  font-family: "Avenir Next", "Trebuchet MS", "Gill Sans", sans-serif;
+  background:
+    radial-gradient(circle at 8% 10%, color-mix(in oklch, var(--chart-2) 13%, transparent), transparent 35%),
+    radial-gradient(circle at 96% 5%, color-mix(in oklch, var(--chart-5) 16%, transparent), transparent 34%),
+    linear-gradient(180deg, color-mix(in oklch, var(--background) 90%, var(--muted) 10%), var(--background));
 }
 
-.logo-link:hover .logo {
-	filter: drop-shadow(0 0 1.5em oklch(0.65 0.2 260 / 0.6));
+.panel-card {
+  background: color-mix(in oklch, var(--card) 92%, var(--accent) 8%);
+  box-shadow: 0 8px 22px color-mix(in oklch, var(--foreground) 8%, transparent);
 }
 
-.logo-link--react:hover .logo {
-	filter: drop-shadow(0 0 1.5em oklch(0.7 0.15 195 / 0.7));
-}
-
-.logo-link--cloudflare:hover .logo,
-.logo-link--hono:hover .logo {
-	filter: drop-shadow(0 0 1.5em oklch(0.7 0.15 45 / 0.6));
-}
-
-@media (prefers-reduced-motion: no-preference) {
-	.logo-link--react .logo {
-		animation: logo-spin infinite 20s linear;
-	}
-}
-
-@keyframes logo-spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
+.metric-block {
+  background: linear-gradient(165deg, color-mix(in oklch, var(--card) 82%, var(--chart-2) 18%), var(--card));
 }
