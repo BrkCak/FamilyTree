@@ -22,19 +22,43 @@ function getThemeColors() {
   }
 
   const style = getComputedStyle(document.documentElement);
-  return {
-    textColor: style.getPropertyValue("--card-foreground").trim() || "#0f172a",
-    border: style.getPropertyValue("--border").trim() || "#cbd5e1",
-    link: style.getPropertyValue("--muted-foreground").trim() || "#64748b",
-    selected: "#ea580c",
-    lineage: "#0891b2",
-    maleFill: "#dbeafe",
-    femaleFill: "#fee2e2",
-    neutralFill: "#ede9fe",
-    selectedFill: "#fed7aa",
-    lineageFill: "#cffafe",
-    matchedFill: "#fef3c7",
+
+  const cssVar = (name: string, fallback: string) => {
+    const v = style.getPropertyValue(name).trim();
+    return v || fallback;
   };
+
+  const light = {
+    textColor: cssVar("--ft-text", "#0f172a"),
+    border: cssVar("--ft-border", "#cbd5e1"),
+    link: cssVar("--ft-link", "#64748b"),
+    selected: cssVar("--ft-selected", "#ea580c"),
+    lineage: cssVar("--ft-lineage", "#0891b2"),
+    maleFill: cssVar("--ft-maleFill", "#dbeafe"),
+    femaleFill: cssVar("--ft-femaleFill", "#fee2e2"),
+    neutralFill: cssVar("--ft-neutralFill", "#ede9fe"),
+    selectedFill: cssVar("--ft-selectedFill", "#fed7aa"),
+    lineageFill: cssVar("--ft-lineageFill", "#cffafe"),
+    matchedFill: cssVar("--ft-matchedFill", "#fef3c7"),
+  };
+
+  const dark = {
+    textColor: cssVar("--ft-text", "#E6F0FA"),
+    border: cssVar("--ft-border", "#25323B"),
+    link: cssVar("--ft-link", "#66BFF6"),
+    selected: cssVar("--ft-selected", "#FFAB60"),
+    lineage: cssVar("--ft-lineage", "#2AD1C6"),
+    maleFill: cssVar("--ft-maleFill", "#072F4D"),
+    femaleFill: cssVar("--ft-femaleFill", "#4A2030"),
+    neutralFill: cssVar("--ft-neutralFill", "#332A45"),
+    selectedFill: cssVar("--ft-selectedFill", "#7A4A12"),
+    lineageFill: cssVar("--ft-lineageFill", "#0F3E40"),
+    matchedFill: cssVar("--ft-matchedFill", "#4A3A08"),
+  };
+
+  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  return prefersDark ? dark : light;
 }
 
 function makeDiagram(onNodeSelect?: (key: number) => void): go.Diagram {

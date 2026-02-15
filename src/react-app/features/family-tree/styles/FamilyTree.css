@@ -1,3 +1,50 @@
+:root {
+  /* Family tree component (ft) variables - light mode defaults, fall back to global vars when present */
+  --ft-text: var(--card-foreground, #0f172a);
+  --ft-border: var(--border, #cbd5e1);
+  --ft-link: var(--muted-foreground, #64748b);
+  --ft-selected: #ea580c;
+  --ft-lineage: #0891b2;
+  --ft-maleFill: #dbeafe;
+  --ft-femaleFill: #fee2e2;
+  --ft-neutralFill: #ede9fe;
+  --ft-selectedFill: #fed7aa;
+  --ft-lineageFill: #cffafe;
+  --ft-matchedFill: #fef3c7;
+}
+
+/* Respect system dark mode where available */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ft-text: #E6F0FA;
+    --ft-border: #25323B;
+    --ft-link: #66BFF6;
+    --ft-selected: #FFAB60;
+    --ft-lineage: #2AD1C6;
+    --ft-maleFill: #072F4D;
+    --ft-femaleFill: #4A2030;
+    --ft-neutralFill: #332A45;
+    --ft-selectedFill: #7A4A12;
+    --ft-lineageFill: #0F3E40;
+    --ft-matchedFill: #4A3A08;
+  }
+}
+
+/* Also allow explicit dark theme toggles (data-theme or .dark) */
+[data-theme="dark"], .dark {
+  --ft-text: #E6F0FA;
+  --ft-border: #25323B;
+  --ft-link: #66BFF6;
+  --ft-selected: #FFAB60;
+  --ft-lineage: #2AD1C6;
+  --ft-maleFill: #072F4D;
+  --ft-femaleFill: #4A2030;
+  --ft-neutralFill: #332A45;
+  --ft-selectedFill: #7A4A12;
+  --ft-lineageFill: #0F3E40;
+  --ft-matchedFill: #4A3A08;
+}
+
 .family-tree-container {
   flex: 1;
   display: flex;
