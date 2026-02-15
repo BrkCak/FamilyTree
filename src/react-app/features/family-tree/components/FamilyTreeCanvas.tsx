@@ -99,88 +99,103 @@ function makeDiagram(onNodeSelect?: (key: number) => void): go.Diagram {
 
   diagram.nodeTemplate = $(
     go.Node,
-    "Auto",
+    "Spot",
     {
       locationSpot: go.Spot.Center,
       cursor: "pointer",
       selectionAdorned: false,
     },
-    $(
-      go.Shape,
-      "RoundedRectangle",
-      {
-        strokeWidth: 2,
-        stroke: colors.border,
-        spot1: new go.Spot(0, 0, 6, 6),
-        spot2: new go.Spot(1, 1, -6, -6),
-      },
-      new go.Binding("fill", "", (data: FamilyNodeViewData) => {
-        if (data.isSelected) {
-          return colors.selectedFill;
-        }
-        if (data.isSearchHit) {
-          return colors.matchedFill;
-        }
-        if (data.isDirectLine) {
-          return colors.lineageFill;
-        }
-        if (data.sex === "M") {
-          return colors.maleFill;
-        }
-        if (data.sex === "F") {
-          return colors.femaleFill;
-        }
-        return colors.neutralFill;
-      }),
-      new go.Binding("stroke", "", (data: FamilyNodeViewData) => {
-        if (data.isSelected) {
-          return colors.selected;
-        }
-        if (data.isDirectLine) {
-          return colors.lineage;
-        }
-        return colors.border;
-      }),
-    ),
+    new go.Binding("isTreeExpanded", "isTreeExpanded").makeTwoWay(),
     $(
       go.Panel,
-      "Vertical",
-      { margin: 10, defaultAlignment: go.Spot.Center, minSize: new go.Size(140, 70) },
+      "Auto",
       $(
-        go.TextBlock,
+        go.Shape,
+        "RoundedRectangle",
         {
-          font: "700 13px 'Avenir Next', 'Trebuchet MS', sans-serif",
-          stroke: colors.textColor,
-          wrap: go.TextBlock.WrapFit,
-          textAlign: "center",
-          maxSize: new go.Size(160, NaN),
+          strokeWidth: 2,
+          stroke: colors.border,
+          spot1: new go.Spot(0, 0, 6, 6),
+          spot2: new go.Spot(1, 1, -6, -6),
         },
-        new go.Binding("text", "name"),
+        new go.Binding("fill", "", (data: FamilyNodeViewData) => {
+          if (data.isSelected) {
+            return colors.selectedFill;
+          }
+          if (data.isSearchHit) {
+            return colors.matchedFill;
+          }
+          if (data.isDirectLine) {
+            return colors.lineageFill;
+          }
+          if (data.sex === "M") {
+            return colors.maleFill;
+          }
+          if (data.sex === "F") {
+            return colors.femaleFill;
+          }
+          return colors.neutralFill;
+        }),
+        new go.Binding("stroke", "", (data: FamilyNodeViewData) => {
+          if (data.isSelected) {
+            return colors.selected;
+          }
+          if (data.isDirectLine) {
+            return colors.lineage;
+          }
+          return colors.border;
+        }),
       ),
       $(
-        go.TextBlock,
-        {
-          margin: new go.Margin(2, 0, 0, 0),
-          font: "12px 'Avenir Next', 'Trebuchet MS', sans-serif",
-          stroke: colors.textColor,
-          opacity: 0.8,
-          wrap: go.TextBlock.WrapFit,
-          textAlign: "center",
-        },
-        new go.Binding("text", "lifespanLabel"),
+        go.Panel,
+        "Vertical",
+        { margin: 10, defaultAlignment: go.Spot.Center, minSize: new go.Size(140, 70) },
+        $(
+          go.TextBlock,
+          {
+            font: "700 13px 'Avenir Next', 'Trebuchet MS', sans-serif",
+            stroke: colors.textColor,
+            wrap: go.TextBlock.WrapFit,
+            textAlign: "center",
+            maxSize: new go.Size(160, NaN),
+          },
+          new go.Binding("text", "name"),
+        ),
+        $(
+          go.TextBlock,
+          {
+            margin: new go.Margin(2, 0, 0, 0),
+            font: "12px 'Avenir Next', 'Trebuchet MS', sans-serif",
+            stroke: colors.textColor,
+            opacity: 0.8,
+            wrap: go.TextBlock.WrapFit,
+            textAlign: "center",
+          },
+          new go.Binding("text", "lifespanLabel"),
+        ),
+        $(
+          go.TextBlock,
+          {
+            margin: new go.Margin(2, 0, 0, 0),
+            font: "11px 'Avenir Next', 'Trebuchet MS', sans-serif",
+            stroke: colors.textColor,
+            opacity: 0.68,
+            wrap: go.TextBlock.WrapFit,
+            textAlign: "center",
+          },
+          new go.Binding("text", "city", (city) => (city ? `Lives in ${city}` : "")),
+        ),
       ),
-      $(
-        go.TextBlock,
-        {
-          margin: new go.Margin(2, 0, 0, 0),
-          font: "11px 'Avenir Next', 'Trebuchet MS', sans-serif",
-          stroke: colors.textColor,
-          opacity: 0.68,
-          wrap: go.TextBlock.WrapFit,
-          textAlign: "center",
-        },
-        new go.Binding("text", "city", (city) => (city ? `Lives in ${city}` : "")),
-      ),
+    ),
+    $(
+      "TreeExpanderButton",
+      {
+        alignment: new go.Spot(1, 0, -8, 8),
+        alignmentFocus: go.Spot.TopRight,
+        width: 18,
+        height: 18,
+      },
+      new go.Binding("visible", "isTreeLeaf", (isTreeLeaf) => !isTreeLeaf).ofObject(),
     ),
   );
 
@@ -245,6 +260,34 @@ export function FamilyTreeCanvas({ nodeDataArray, linkDataArray, onNodeSelect }:
     });
   }, [withDiagram]);
 
+  const toggleAllBranches = useCallback(
+    (expanded: boolean) => {
+      withDiagram((diagram) => {
+        diagram.startTransaction(expanded ? "expand-all-branches" : "collapse-all-branches");
+        diagram.nodes.each((node) => {
+          if (node.findTreeChildrenNodes().count > 0) {
+            node.isTreeExpanded = expanded;
+          }
+        });
+        diagram.commitTransaction(expanded ? "expand-all-branches" : "collapse-all-branches");
+
+        if (expanded) {
+          diagram.commandHandler.zoomToFit();
+          diagram.centerRect(diagram.documentBounds);
+        }
+      });
+    },
+    [withDiagram],
+  );
+
+  const collapseAllBranches = useCallback(() => {
+    toggleAllBranches(false);
+  }, [toggleAllBranches]);
+
+  const expandAllBranches = useCallback(() => {
+    toggleAllBranches(true);
+  }, [toggleAllBranches]);
+
   return (
     <div className="family-tree-container">
       <div className="family-tree-controls">
@@ -256,6 +299,12 @@ export function FamilyTreeCanvas({ nodeDataArray, linkDataArray, onNodeSelect }:
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={fitToTree} disabled={!hasNodes}>
           Fit Tree
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={collapseAllBranches} disabled={!hasNodes}>
+          Collapse All
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={expandAllBranches} disabled={!hasNodes}>
+          Expand All
         </Button>
       </div>
       <ReactDiagram

@@ -77,8 +77,11 @@
   right: 0.9rem;
   z-index: 3;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 0.45rem;
+  max-width: min(92%, 540px);
 }
 
 .family-tree-controls button {
