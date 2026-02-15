@@ -84,3 +84,114 @@
 .family-tree-controls button {
   min-width: 2rem;
 }
+
+.family-timeline-container {
+  flex: 1;
+  min-height: 560px;
+  width: 100%;
+  border-radius: 0.95rem;
+  border: 1px solid var(--border);
+  background: linear-gradient(145deg, color-mix(in oklch, var(--background) 85%, oklch(0.76 0.03 220) 15%), var(--background));
+  padding: 0.95rem;
+  overflow: auto;
+}
+
+.family-timeline-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.family-timeline-rows {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.family-timeline-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 0.6rem;
+  align-items: start;
+}
+
+.family-timeline-generation {
+  position: sticky;
+  left: 0;
+  top: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  padding-top: 0.2rem;
+}
+
+.family-timeline-track {
+  position: relative;
+  min-width: 420px;
+}
+
+.family-timeline-base-line {
+  position: absolute;
+  top: 17px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+
+.family-timeline-node {
+  position: absolute;
+  transform: translateX(-50%);
+  min-width: 124px;
+  max-width: 200px;
+  border: 1px solid color-mix(in oklch, var(--border) 84%, var(--chart-2) 16%);
+  border-radius: 0.65rem;
+  background: color-mix(in oklch, var(--card) 88%, var(--accent) 12%);
+  padding: 0.38rem 0.48rem;
+  text-align: left;
+  box-shadow: 0 10px 18px color-mix(in oklch, var(--foreground) 10%, transparent);
+  transition: transform 130ms ease, box-shadow 130ms ease, border-color 130ms ease;
+}
+
+.family-timeline-node:hover {
+  transform: translateX(-50%) translateY(-1px);
+  box-shadow: 0 12px 22px color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+
+.family-timeline-node.is-selected {
+  border-color: var(--ft-selected);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ft-selected) 40%, transparent), 0 12px 24px color-mix(in oklch, var(--foreground) 16%, transparent);
+}
+
+.family-timeline-year {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--muted-foreground);
+  font-weight: 700;
+}
+
+.family-timeline-name {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.family-timeline-empty {
+  height: 100%;
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+  font-size: 0.92rem;
+}

@@ -1,13 +1,16 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FamilyFilters } from "./FamilyFilters";
 import { FamilyStats } from "./FamilyStats";
 import { MemberDetails } from "./MemberDetails";
 import { AddMemberForm } from "./AddMemberForm";
 import { FamilyTreeCanvas } from "./FamilyTreeCanvas";
+import { FamilyTimeline } from "./FamilyTimeline";
 import { ThemeToggle } from "./ThemeToggle";
 import { useFamilyTree } from "../hooks/useFamilyTree";
 
 export function FamilyTreePage() {
+  const [viewMode, setViewMode] = useState<"tree" | "timeline">("tree");
   const {
     nodes,
     isLoading,
@@ -95,11 +98,34 @@ export function FamilyTreePage() {
             </div>
           )}
 
-          <FamilyTreeCanvas
-            nodeDataArray={nodeDataArray}
-            linkDataArray={linkDataArray}
-            onNodeSelect={setSelectedKey}
-          />
+          <div className="panel-card rounded-xl border p-2 flex flex-wrap items-center gap-2 w-fit">
+            <Button
+              type="button"
+              size="sm"
+              variant={viewMode === "tree" ? "default" : "outline"}
+              onClick={() => setViewMode("tree")}
+            >
+              Tree
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={viewMode === "timeline" ? "default" : "outline"}
+              onClick={() => setViewMode("timeline")}
+            >
+              Timeline
+            </Button>
+          </div>
+
+          {viewMode === "tree" ? (
+            <FamilyTreeCanvas
+              nodeDataArray={nodeDataArray}
+              linkDataArray={linkDataArray}
+              onNodeSelect={setSelectedKey}
+            />
+          ) : (
+            <FamilyTimeline nodes={nodeDataArray} selectedKey={selectedKey} onNodeSelect={setSelectedKey} />
+          )}
         </section>
 
         <aside className="flex flex-col gap-4">
