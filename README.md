@@ -34,7 +34,7 @@ Get started in minutes with local development or deploy directly via the Cloudfl
 To start a new project with this template, run:
 
 ```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/vite-react-template
+npm create cloudflare@latest -- --template=cloudflare/templates/FamilyTree
 ```
 
 A live deployment of this template is available at:
