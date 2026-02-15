@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { INITIAL_LINKS, INITIAL_NODES } from "../model/constants";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { createFamilyNode, fetchFamilyTree } from "../model/api";
 import { getAge, getChildrenMap, getGenerationMap, getParentMap } from "../model/selectors";
 import type {
   AddMemberInput,
@@ -17,9 +17,19 @@ function findNodesByKeys(nodes: FamilyNodeData[], keys: number[]) {
     .filter((node): node is FamilyNodeData => Boolean(node));
 }
 
+function normalizeError(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Unexpected error";
+}
+
 export function useFamilyTree() {
-  const [nodes, setNodes] = useState(INITIAL_NODES);
-  const [links, setLinks] = useState(INITIAL_LINKS);
+  const [nodes, setNodes] = useState<FamilyNodeData[]>([]);
+  const [links, setLinks] = useState<FamilyLinkData[]>([]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [query, setQuery] = useState("");
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
@@ -36,6 +46,28 @@ export function useFamilyTree() {
     city: "",
     parent: "none",
   });
+
+  const refreshTree = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const tree = await fetchFamilyTree();
+      setNodes(tree.nodes);
+      setLinks(tree.links);
+      setSelectedKey((prev) =>
+        prev && tree.nodes.some((node) => node.key === prev) ? prev : null,
+      );
+    } catch (error) {
+      setLoadError(normalizeError(error));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshTree();
+  }, [refreshTree]);
 
   const generationMap = useMemo(() => getGenerationMap(nodes, links), [nodes, links]);
   const maxGeneration = useMemo(() => Math.max(...Array.from(generationMap.values()), 0), [generationMap]);
@@ -175,13 +207,15 @@ export function useFamilyTree() {
 
   const totalMembers = nodes.length;
   const livingMembers = nodes.filter((node) => !node.deathYear).length;
-  const averageAge = Math.round(nodes.reduce((total, node) => total + getAge(node), 0) / nodes.length);
+  const averageAge = nodes.length
+    ? Math.round(nodes.reduce((total, node) => total + getAge(node), 0) / nodes.length)
+    : 0;
 
   const updateNewMember = <K extends keyof AddMemberInput>(field: K, value: AddMemberInput[K]) => {
     setNewMember((prev) => ({ ...prev, [field]: value }));
   };
 
-  const addMember = () => {
+  const addMember = async () => {
     setFormError(null);
     const trimmedName = newMember.name.trim();
     const birthYear = Number(newMember.birthYear);
@@ -197,37 +231,28 @@ export function useFamilyTree() {
       return;
     }
 
-    const newKey = Math.max(...nodes.map((node) => node.key)) + 1;
-    const node: FamilyNodeData = {
-      key: newKey,
-      name: trimmedName,
-      birthYear,
-      sex: newMember.gender,
-      city: newMember.city.trim() || undefined,
-    };
+    try {
+      const created = await createFamilyNode({
+        name: trimmedName,
+        birthYear,
+        sex: newMember.gender,
+        city: newMember.city.trim() || undefined,
+        parentId: newMember.parent !== "none" ? Number(newMember.parent) : undefined,
+      });
 
-    setNodes((prev) => [...prev, node]);
+      setNewMember({
+        name: "",
+        birthYear: "",
+        gender: "F",
+        city: "",
+        parent: "none",
+      });
 
-    if (newMember.parent !== "none") {
-      const parentKey = Number(newMember.parent);
-      setLinks((prev: FamilyLinkData[]) => [
-        ...prev,
-        {
-          key: Math.max(...prev.map((link) => link.key), 0) + 1,
-          from: parentKey,
-          to: newKey,
-        },
-      ]);
+      await refreshTree();
+      setSelectedKey(created.node.key);
+    } catch (error) {
+      setFormError(normalizeError(error));
     }
-
-    setNewMember({
-      name: "",
-      birthYear: "",
-      gender: "F",
-      city: "",
-      parent: "none",
-    });
-    setSelectedKey(newKey);
   };
 
   const clearFilters = () => {
@@ -240,6 +265,9 @@ export function useFamilyTree() {
 
   return {
     nodes,
+    isLoading,
+    loadError,
+    refreshTree,
     query,
     setQuery,
     genderFilter,

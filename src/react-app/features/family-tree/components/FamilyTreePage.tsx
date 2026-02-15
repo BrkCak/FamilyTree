@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { FamilyFilters } from "./FamilyFilters";
 import { FamilyStats } from "./FamilyStats";
 import { MemberDetails } from "./MemberDetails";
@@ -9,6 +10,9 @@ import { useFamilyTree } from "../hooks/useFamilyTree";
 export function FamilyTreePage() {
   const {
     nodes,
+    isLoading,
+    loadError,
+    refreshTree,
     query,
     setQuery,
     genderFilter,
@@ -72,7 +76,20 @@ export function FamilyTreePage() {
             onResetFilters={clearFilters}
           />
 
-          {filteredCount === 0 && (
+          {isLoading && (
+            <div className="rounded-xl border border-sky-300 bg-sky-50/70 px-4 py-3 text-sm text-sky-900 dark:bg-sky-900/20 dark:text-sky-200 dark:border-sky-700">
+              Loading family data from database...
+            </div>
+          )}
+
+          {loadError && (
+            <div className="rounded-xl border border-red-300 bg-red-50/70 px-4 py-3 text-sm text-red-900 dark:bg-red-900/20 dark:text-red-200 dark:border-red-700 flex items-center justify-between gap-2">
+              <span>Failed to load family data: {loadError}</span>
+              <Button size="sm" variant="outline" onClick={() => void refreshTree()}>Retry</Button>
+            </div>
+          )}
+
+          {!isLoading && !loadError && filteredCount === 0 && (
             <div className="rounded-xl border border-orange-300 bg-orange-50/70 px-4 py-3 text-sm text-orange-900 dark:bg-orange-900/20 dark:text-orange-200 dark:border-orange-700">
               No members match your active filters. Reset filters or widen your search.
             </div>
@@ -106,7 +123,7 @@ export function FamilyTreePage() {
             nodes={nodes}
             formError={formError}
             onInputChange={updateNewMember}
-            onAddMember={addMember}
+            onAddMember={() => void addMember()}
           />
         </aside>
       </main>
