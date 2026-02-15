@@ -44,6 +44,8 @@ export function FamilyTreePage() {
     updateNewMember,
     addMember,
     formError,
+    duplicateWarning,
+    dismissDuplicateWarning,
     clearFilters,
   } = useFamilyTree();
 
@@ -148,6 +150,8 @@ export function FamilyTreePage() {
             memberInput={newMember}
             nodes={nodes}
             formError={formError}
+            duplicateWarning={duplicateWarning}
+            onDismissDuplicateWarning={dismissDuplicateWarning}
             onInputChange={updateNewMember}
             onAddMember={() => void addMember()}
           />

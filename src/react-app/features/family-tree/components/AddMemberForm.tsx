@@ -1,15 +1,34 @@
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { AddMemberInput, FamilyNodeData } from "../model/types";
 
 interface AddMemberFormProps {
   memberInput: AddMemberInput;
   nodes: FamilyNodeData[];
   formError: string | null;
+  duplicateWarning: string | null;
+  onDismissDuplicateWarning: () => void;
   onInputChange: <K extends keyof AddMemberInput>(field: K, value: AddMemberInput[K]) => void;
   onAddMember: () => void;
 }
 
-export function AddMemberForm({ memberInput, nodes, formError, onInputChange, onAddMember }: AddMemberFormProps) {
+export function AddMemberForm({
+  memberInput,
+  nodes,
+  formError,
+  duplicateWarning,
+  onDismissDuplicateWarning,
+  onInputChange,
+  onAddMember,
+}: AddMemberFormProps) {
   return (
     <div className="panel-card rounded-xl border p-4">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Add New Member</h2>
@@ -62,6 +81,18 @@ export function AddMemberForm({ memberInput, nodes, formError, onInputChange, on
 
         <Button className="w-full" onClick={onAddMember}>Add Member</Button>
       </div>
+
+      <AlertDialog open={Boolean(duplicateWarning)} onOpenChange={(open) => !open && onDismissDuplicateWarning()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Duplicate Member Detected</AlertDialogTitle>
+            <AlertDialogDescription>{duplicateWarning}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={onDismissDuplicateWarning}>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -24,6 +24,17 @@ function normalizeError(error: unknown) {
   return "Unexpected error";
 }
 
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+const TREE_POLL_INTERVAL_MS = 5000;
+
 export function useFamilyTree() {
   const [nodes, setNodes] = useState<FamilyNodeData[]>([]);
   const [links, setLinks] = useState<FamilyLinkData[]>([]);
@@ -38,6 +49,7 @@ export function useFamilyTree() {
   const [lineageMode, setLineageMode] = useState(false);
   const [selectedKey, setSelectedKey] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
 
   const [newMember, setNewMember] = useState<AddMemberInput>({
     name: "",
@@ -47,9 +59,11 @@ export function useFamilyTree() {
     parent: "none",
   });
 
-  const refreshTree = useCallback(async () => {
-    setIsLoading(true);
-    setLoadError(null);
+  const refreshTree = useCallback(async (silent = false) => {
+    if (!silent) {
+      setIsLoading(true);
+      setLoadError(null);
+    }
 
     try {
       const tree = await fetchFamilyTree();
@@ -59,14 +73,29 @@ export function useFamilyTree() {
         prev && tree.nodes.some((node) => node.key === prev) ? prev : null,
       );
     } catch (error) {
-      setLoadError(normalizeError(error));
+      if (!silent) {
+        setLoadError(normalizeError(error));
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     void refreshTree();
+  }, [refreshTree]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (document.hidden) {
+        return;
+      }
+      void refreshTree(true);
+    }, TREE_POLL_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
   }, [refreshTree]);
 
   const generationMap = useMemo(() => getGenerationMap(nodes, links), [nodes, links]);
@@ -136,11 +165,9 @@ export function useFamilyTree() {
         return false;
       }
 
-      if (lineageMode && selectedKey && !lineageSet.has(node.key)) {
-        return false;
-      }
+      return !(lineageMode && selectedKey && !lineageSet.has(node.key));
 
-      return true;
+
     });
   }, [nodes, query, genderFilter, statusFilter, generationFilter, generationMap, lineageMode, selectedKey, lineageSet]);
 
@@ -212,12 +239,15 @@ export function useFamilyTree() {
     : 0;
 
   const updateNewMember = <K extends keyof AddMemberInput>(field: K, value: AddMemberInput[K]) => {
+    setDuplicateWarning(null);
     setNewMember((prev) => ({ ...prev, [field]: value }));
   };
 
   const addMember = async () => {
     setFormError(null);
     const trimmedName = newMember.name.trim();
+    const trimmedCity = newMember.city.trim();
+    const normalizedName = normalizeText(trimmedName);
     const birthYear = Number(newMember.birthYear);
     const currentYear = new Date().getFullYear();
 
@@ -231,12 +261,44 @@ export function useFamilyTree() {
       return;
     }
 
+    if (newMember.parent !== "none") {
+      const parentKey = Number(newMember.parent);
+      const parent = nodes.find((node) => node.key === parentKey);
+      if (!parent) {
+        setFormError("Selected parent does not exist.");
+        return;
+      }
+
+      if (birthYear < parent.birthYear) {
+        setFormError("Child birth year cannot be earlier than the parent's birth year.");
+        return;
+      }
+    }
+
+    const duplicateCandidate = nodes.find((node) => {
+      const existingName = normalizeText(node.name);
+      if (existingName !== normalizedName) {
+        return false;
+      }
+
+      return node.birthYear === birthYear && node.sex === newMember.gender;
+    });
+
+    if (duplicateCandidate) {
+      setDuplicateWarning(
+        `Duplicate blocked: ${duplicateCandidate.name} (${duplicateCandidate.birthYear}, ${duplicateCandidate.sex}) already exists.`,
+      );
+      return;
+    }
+
+    setDuplicateWarning(null);
+
     try {
       const created = await createFamilyNode({
         name: trimmedName,
         birthYear,
         sex: newMember.gender,
-        city: newMember.city.trim() || undefined,
+        city: trimmedCity || undefined,
         parentId: newMember.parent !== "none" ? Number(newMember.parent) : undefined,
       });
 
@@ -247,6 +309,7 @@ export function useFamilyTree() {
         city: "",
         parent: "none",
       });
+      setDuplicateWarning(null);
 
       await refreshTree();
       setSelectedKey(created.node.key);
@@ -261,6 +324,11 @@ export function useFamilyTree() {
     setStatusFilter("all");
     setGenerationFilter("all");
     setLineageMode(false);
+    setDuplicateWarning(null);
+  };
+
+  const dismissDuplicateWarning = () => {
+    setDuplicateWarning(null);
   };
 
   return {
@@ -296,6 +364,8 @@ export function useFamilyTree() {
     updateNewMember,
     addMember,
     formError,
+    duplicateWarning,
+    dismissDuplicateWarning,
     clearFilters,
   };
 }

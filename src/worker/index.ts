@@ -20,6 +20,17 @@ interface LinkRow {
   child_id: number;
 }
 
+interface ParentBirthYearRow {
+  birth_year: number;
+}
+
+interface DuplicateNodeRow {
+  id: number;
+  name: string;
+  birth_year: number;
+  sex: "M" | "F" | "X" | null;
+}
+
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.get("/api/", (c) => c.json({ name: "Cloudflare" }));
@@ -58,86 +69,115 @@ app.get("/api/family/tree", async (c) => {
 });
 
 app.post("/api/family/nodes", async (c) => {
-  const payload = (await c.req.json()) as {
-    name?: string;
-    birthYear?: number;
-    sex?: "M" | "F" | "X";
-    city?: string;
-    notes?: string;
-    parentId?: number;
-  };
+  try {
+    const payload = (await c.req.json()) as {
+      name?: string;
+      birthYear?: number;
+      sex?: "M" | "F" | "X";
+      city?: string;
+      notes?: string;
+      parentId?: number;
+    };
 
-  const name = payload.name?.trim();
-  const birthYear = Number(payload.birthYear);
-  const sex = payload.sex;
-  const city = payload.city?.trim() || null;
-  const notes = payload.notes?.trim() || null;
-  const parentId = payload.parentId;
+    const name = payload.name?.trim();
+    const birthYear = Number(payload.birthYear);
+    const sex = payload.sex;
+    const city = payload.city?.trim() || null;
+    const notes = payload.notes?.trim() || null;
+    const parentId = payload.parentId;
 
-  if (!name) {
-    return c.json({ error: "Name is required." }, 400);
-  }
-
-  if (!Number.isInteger(birthYear) || birthYear < 1850 || birthYear > new Date().getFullYear()) {
-    return c.json({ error: "Birth year is invalid." }, 400);
-  }
-
-  if (sex !== "M" && sex !== "F" && sex !== "X") {
-    return c.json({ error: "Sex must be M, F, or X." }, 400);
-  }
-
-  if (parentId !== undefined && !Number.isInteger(parentId)) {
-    return c.json({ error: "Parent ID must be a valid integer." }, 400);
-  }
-
-  const insertNodeResult = await c.env.familyStorage
-    .prepare("INSERT INTO family_nodes (name, birth_year, death_year, sex, city, notes) VALUES (?1, ?2, NULL, ?3, ?4, ?5)")
-    .bind(name, birthYear, sex, city, notes)
-    .run();
-
-  const newNodeId = Number(insertNodeResult.meta.last_row_id);
-
-  let createdLink: { key: number; from: number; to: number } | undefined;
-  if (parentId !== undefined) {
-    const parentExists = await c.env.familyStorage
-      .prepare("SELECT 1 as present FROM family_nodes WHERE id = ?1 LIMIT 1")
-      .bind(parentId)
-      .first<{ present: number }>();
-
-    if (!parentExists) {
-      await c.env.familyStorage
-        .prepare("DELETE FROM family_nodes WHERE id = ?1")
-        .bind(newNodeId)
-        .run();
-      return c.json({ error: "Parent not found." }, 400);
+    if (!name) {
+      return c.json({ error: "Name is required." }, 400);
     }
 
-    const insertLinkResult = await c.env.familyStorage
-      .prepare("INSERT INTO family_links (parent_id, child_id) VALUES (?1, ?2)")
-      .bind(parentId, newNodeId)
+    if (!Number.isInteger(birthYear) || birthYear < 1850 || birthYear > new Date().getFullYear()) {
+      return c.json({ error: "Birth year is invalid." }, 400);
+    }
+
+    if (sex !== "M" && sex !== "F" && sex !== "X") {
+      return c.json({ error: "Sex must be M, F, or X." }, 400);
+    }
+
+    if (parentId !== undefined && !Number.isInteger(parentId)) {
+      return c.json({ error: "Parent ID must be a valid integer." }, 400);
+    }
+
+    const duplicateRow = await c.env.familyStorage
+      .prepare(
+        "SELECT id, name, birth_year, sex FROM family_nodes WHERE lower(trim(name)) = lower(trim(?1)) AND birth_year = ?2 AND sex = ?3 LIMIT 1",
+      )
+      .bind(name, birthYear, sex)
+      .first<DuplicateNodeRow>();
+
+    if (duplicateRow) {
+      return c.json(
+        {
+          error: `Duplicate blocked: ${duplicateRow.name} (${duplicateRow.birth_year}, ${duplicateRow.sex ?? "X"}) already exists.`,
+        },
+        400,
+      );
+    }
+
+    if (parentId !== undefined) {
+      const parentRow = await c.env.familyStorage
+        .prepare("SELECT birth_year FROM family_nodes WHERE id = ?1 LIMIT 1")
+        .bind(parentId)
+        .first<ParentBirthYearRow>();
+
+      if (!parentRow) {
+        return c.json({ error: "Parent not found." }, 400);
+      }
+
+      if (birthYear < parentRow.birth_year) {
+        return c.json(
+          { error: "Child birth year cannot be earlier than the parent's birth year." },
+          400,
+        );
+      }
+    }
+
+    const insertNodeResult = await c.env.familyStorage
+      .prepare("INSERT INTO family_nodes (name, birth_year, death_year, sex, city, notes) VALUES (?1, ?2, NULL, ?3, ?4, ?5)")
+      .bind(name, birthYear, sex, city, notes)
       .run();
 
-    createdLink = {
-      key: Number(insertLinkResult.meta.last_row_id),
-      from: parentId,
-      to: newNodeId,
-    };
-  }
+    const insertedRows = Number(insertNodeResult.meta.changes ?? 0);
+    const newNodeId = Number(insertNodeResult.meta.last_row_id ?? 0);
+    if (insertedRows !== 1 || !Number.isInteger(newNodeId) || newNodeId <= 0) {
+      return c.json({ error: "Failed to persist member." }, 500);
+    }
 
-  return c.json(
-    {
-      node: {
-        key: newNodeId,
-        name,
-        birthYear,
-        sex,
-        city: city ?? undefined,
-        notes: notes ?? undefined,
+    let createdLink: { key: number; from: number; to: number } | undefined;
+    if (parentId !== undefined) {
+      const insertLinkResult = await c.env.familyStorage
+        .prepare("INSERT INTO family_links (parent_id, child_id) VALUES (?1, ?2)")
+        .bind(parentId, newNodeId)
+        .run();
+
+      createdLink = {
+        key: Number(insertLinkResult.meta.last_row_id),
+        from: parentId,
+        to: newNodeId,
+      };
+    }
+
+    return c.json(
+      {
+        node: {
+          key: newNodeId,
+          name,
+          birthYear,
+          sex,
+          city: city ?? undefined,
+          notes: notes ?? undefined,
+        },
+        link: createdLink,
       },
-      link: createdLink,
-    },
-    201,
-  );
+      201,
+    );
+  } catch {
+    return c.json({ error: "Failed to create member." }, 500);
+  }
 });
 
 export default app;
