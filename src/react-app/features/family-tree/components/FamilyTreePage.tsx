@@ -49,7 +49,7 @@ export function FamilyTreePage() {
       <header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur-md">
         <div className="container max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Family Atlas</h1>
+            <h1 className="text-xl font-bold tracking-tight">Family XY</h1>
             <p className="text-xs text-muted-foreground">Interactive family tree with lineage insights</p>
           </div>
           <ThemeToggle />
@@ -57,7 +57,7 @@ export function FamilyTreePage() {
       </header>
 
       <main className="container max-w-7xl mx-auto px-4 py-5 flex-1 grid gap-4 lg:grid-cols-[1.65fr,1fr]">
-        <section className="flex flex-col gap-3 min-h-[640px]">
+        <section className="flex flex-col gap-3 min-h-160">
           <FamilyFilters
             query={query}
             genderFilter={genderFilter}

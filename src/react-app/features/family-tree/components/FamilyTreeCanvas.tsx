@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import * as go from "gojs";
 import { ReactDiagram } from "gojs-react";
 import type { FamilyLinkViewData, FamilyNodeViewData } from "../model/types";
+import { Button } from "@/components/ui/button.tsx";
 import "../styles/FamilyTree.css";
 
 function getThemeColors() {
@@ -213,11 +214,52 @@ interface FamilyTreeCanvasProps {
 }
 
 export function FamilyTreeCanvas({ nodeDataArray, linkDataArray, onNodeSelect }: FamilyTreeCanvasProps) {
+  const diagramRef = useRef<ReactDiagram | null>(null);
   const initDiagram = useMemo(() => () => makeDiagram(onNodeSelect), [onNodeSelect]);
+  const hasNodes = nodeDataArray.length > 0;
+
+  const withDiagram = useCallback((action: (diagram: go.Diagram) => void) => {
+    const diagram = diagramRef.current?.getDiagram();
+    if (!diagram) {
+      return;
+    }
+    action(diagram);
+  }, []);
+
+  const zoomIn = useCallback(() => {
+    withDiagram((diagram) => {
+      diagram.scale = Math.min(diagram.scale * 1.15, 2.5);
+    });
+  }, [withDiagram]);
+
+  const zoomOut = useCallback(() => {
+    withDiagram((diagram) => {
+      diagram.scale = Math.max(diagram.scale / 1.15, 0.2);
+    });
+  }, [withDiagram]);
+
+  const fitToTree = useCallback(() => {
+    withDiagram((diagram) => {
+      diagram.commandHandler.zoomToFit();
+      diagram.centerRect(diagram.documentBounds);
+    });
+  }, [withDiagram]);
 
   return (
     <div className="family-tree-container">
+      <div className="family-tree-controls">
+        <Button type="button" size="sm" variant="secondary" onClick={zoomIn} disabled={!hasNodes} aria-label="Zoom in">
+          +
+        </Button>
+        <Button type="button" size="sm" variant="secondary" onClick={zoomOut} disabled={!hasNodes} aria-label="Zoom out">
+          -
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={fitToTree} disabled={!hasNodes}>
+          Fit Tree
+        </Button>
+      </div>
       <ReactDiagram
+        ref={diagramRef}
         initDiagram={initDiagram}
         divClassName="family-tree-diagram"
         nodeDataArray={nodeDataArray}
