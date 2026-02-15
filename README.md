@@ -1,46 +1,32 @@
-# React + Vite + Hono + Cloudflare Workers
+# FamilyTree
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/vite-react-template)
+Interactive family tree application with:
+- tree visualization (GoJS)
+- generational timeline mode
+- branch collapse/expand controls
+- duplicate and birth-year validations
+- Cloudflare Worker API + D1 database
 
-This template provides a minimal setup for building a React application with TypeScript and Vite, designed to run on Cloudflare Workers. It features hot module replacement, ESLint integration, and the flexibility of Workers deployments.
+[FamilyTree App](https://familytree.buraak-cakir.workers.dev/)
 
-![React + TypeScript + Vite + Cloudflare Workers](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/fc7b4b62-442b-4769-641b-ad4422d74300/public)
+## Technologies
 
-<!-- dash-content-start -->
+- Frontend: React 19, TypeScript, Vite 6
+- UI: Tailwind CSS 4, Radix UI, custom component library
+- Diagram engine: GoJS + gojs-react
+- Backend: Hono on Cloudflare Workers
+- Database: Cloudflare D1 (SQLite)
+- Tooling: ESLint, Wrangler
+- Containerization: Docker, Docker Compose
 
-🚀 Supercharge your web development with this powerful stack:
+## Project Structure
 
-- [**React**](https://react.dev/) - A modern UI library for building interactive interfaces
-- [**Vite**](https://vite.dev/) - Lightning-fast build tooling and development server
-- [**Hono**](https://hono.dev/) - Ultralight, modern backend framework
-- [**Cloudflare Workers**](https://developers.cloudflare.com/workers/) - Edge computing platform for global deployment
+- `src/react-app` -> React client application
+- `src/worker` -> Hono API running on Cloudflare Workers
+- `schema.sql` -> D1 schema and seed data
+- `wrangler.json` -> Worker and D1 configuration
 
-### ✨ Key Features
-
-- 🔥 Hot Module Replacement (HMR) for rapid development
-- 📦 TypeScript support out of the box
-- 🛠️ ESLint configuration included
-- ⚡ Zero-config deployment to Cloudflare's global network
-- 🎯 API routes with Hono's elegant routing
-- 🔄 Full-stack development setup
-- 🔎 Built-in Observability to monitor your Worker
-
-Get started in minutes with local development or deploy directly via the Cloudflare dashboard. Perfect for building modern, performant web applications at the edge.
-
-<!-- dash-content-end -->
-
-## Getting Started
-
-To start a new project with this template, run:
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/FamilyTree
-```
-
-A live deployment of this template is available at:
-[https://react-vite-template.templates.workers.dev](https://react-vite-template.templates.workers.dev)
-
-## Development
+## Local Development
 
 Install dependencies:
 
@@ -48,43 +34,61 @@ Install dependencies:
 npm install
 ```
 
-Start the development server with:
+Run development server:
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at [http://localhost:5173](http://localhost:5173).
+Open:
 
-## Production
+```text
+http://localhost:5173
+```
 
-Build your project for production:
+## Docker
+
+Build and run:
+
+```bash
+docker compose up --build -d
+```
+
+Stop:
+
+```bash
+docker compose down
+```
+
+## Build, Lint, Deploy
+
+Build:
 
 ```bash
 npm run build
 ```
 
-Preview your build locally:
+Lint:
 
 ```bash
-npm run preview
+npm run lint
 ```
 
-Deploy your project to Cloudflare Workers:
+Deploy to Cloudflare:
 
 ```bash
-npm run build && npm run deploy
+npm run deploy
 ```
 
-Monitor your workers:
+Worker logs:
 
 ```bash
 npx wrangler tail
 ```
 
-## Additional Resources
+## Notes
 
-- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://reactjs.org/)
-- [Hono Documentation](https://hono.dev/)
+- API endpoint for tree data: `/api/family/tree`
+- API endpoint for member creation: `/api/family/nodes`
+- Duplicate rule: same `name + birthYear + gender` is blocked
+- Child birth year cannot be earlier than parent birth year
