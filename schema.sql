@@ -93,33 +93,73 @@ INSERT OR IGNORE INTO family_nodes (id, name, birth_year, death_year, sex, city,
 INSERT OR IGNORE INTO family_nodes (id, name, birth_year, death_year, sex, city, notes) VALUES (70, 'Samuel Wolf', 1989, NULL, 'M', 'Leipzig', NULL);
 INSERT OR IGNORE INTO family_nodes (id, name, birth_year, death_year, sex, city, notes) VALUES (71, 'Nora Neumann', 1998, NULL, 'F', 'Bremen', NULL);
 
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (1, 40, 55);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (2, 40, 14);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (3, 40, 25);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (4, 40, 70);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (5, 16, 27);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (6, 16, 42);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (7, 16, 57);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (8, 62, 6);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (9, 62, 32);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (10, 12, 38);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (11, 12, 53);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (12, 10, 21);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (13, 10, 51);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (14, 35, 65);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (15, 34, 8);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (16, 22, 23);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (17, 22, 46);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (18, 52, 12);
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (19, 52, 31);
-
-INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (20, 3, 16);
-
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (1, 1, 2);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (2, 1, 3);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (3, 2, 4);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (4, 2, 5);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (5, 3, 6);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (6, 3, 7);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (7, 4, 8);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (8, 4, 9);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (9, 5, 10);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (10, 5, 11);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (11, 6, 12);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (12, 6, 13);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (13, 7, 14);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (14, 7, 15);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (15, 8, 16);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (16, 8, 17);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (17, 9, 18);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (18, 9, 19);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (19, 10, 20);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (20, 10, 21);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (21, 11, 22);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (22, 11, 23);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (23, 12, 24);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (24, 12, 25);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (25, 13, 26);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (26, 13, 27);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (27, 14, 28);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (28, 14, 29);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (29, 15, 30);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (30, 15, 31);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (31, 16, 32);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (32, 16, 33);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (33, 17, 34);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (34, 17, 35);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (35, 18, 36);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (36, 18, 37);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (37, 19, 38);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (38, 19, 39);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (39, 20, 40);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (40, 20, 41);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (41, 21, 42);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (42, 21, 43);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (43, 22, 44);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (44, 22, 45);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (45, 23, 46);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (46, 23, 47);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (47, 24, 48);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (48, 24, 49);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (49, 25, 50);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (50, 25, 51);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (51, 26, 52);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (52, 26, 53);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (53, 27, 54);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (54, 27, 55);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (55, 28, 56);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (56, 28, 57);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (57, 29, 58);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (58, 29, 59);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (59, 30, 60);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (60, 30, 61);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (61, 31, 62);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (62, 31, 63);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (63, 32, 64);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (64, 32, 65);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (65, 33, 66);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (66, 33, 67);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (67, 34, 68);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (68, 34, 69);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (69, 35, 70);
+INSERT OR IGNORE INTO family_links (id, parent_id, child_id) VALUES (70, 35, 71);
